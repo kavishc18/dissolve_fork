@@ -1,0 +1,57 @@
+run:
+atomistic
+nproc:
+1
+title:
+IPA_water_9molpct
+ntypes:
+6
+box_length:
+48.4602   48.4602   48.4602
+bin_width:
+0.1d0
+ensemble:
+NVT
+label_atom:
+CT
+HC
+OH
+HO
+OW
+HW
+scattering_lengths:
+6.646d0
+-3.739d0
+5.803d0
+-3.739d0
+5.803d0
+-3.739d0
+6.671d0
+form_factor:
+no_FF
+exchangeable_atoms:
+0
+number_isotopologues:
+1
+isotopologues:
+sample_1   H
+atom    natural   isotope
+CT        1.0      0.0
+HC        1.0      0.0
+OH        1.0      0.0
+HO        1.0      0.0
+OW        1.0      0.0
+HW        1.0      0.0
+qmin:
+0.01d0
+qdelta:
+0.02d0
+qmax:
+15.0d0
+binning:
+linear
+broadening:
+none
+windowfn:
+none
+endinput

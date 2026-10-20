@@ -1,4 +1,6 @@
 dissolve_add_test(SRC atomTypeMix.cpp)
+dissolve_add_test(SRC beadType.cpp)
+dissolve_add_test(SRC beadWeights.cpp)
 dissolve_add_test(SRC box.cpp)
 dissolve_add_test(SRC cells.cpp)
 dissolve_add_test(SRC cells2.cpp)

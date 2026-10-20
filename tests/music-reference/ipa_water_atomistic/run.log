@@ -1,0 +1,17 @@
+Note: The following floating-point exceptions are signalling: IEEE_DENORMAL
+ Scattering calculation: version 1.1 (15-04-2024) 
+ read input.dat file successfully
+ read model.dat file successfully
+ ******started F(Q) calculation using atomistic trajectory*******
+ Initialization of vectors for F(Q) completed
+ Loop begins over number of frames to populate          histogram for g(r) calculation
+ frame:                    1
+ frame:                    2
+ frame:                    3
+ Loop ends over number of frames; histogram computed
+ partial g(r) computed
+ partial S(Q) computed
+ Weighted S(Q) computed
+ F(Q) calculation from atomistic trajectory completed
+     initial set up time   0.248000E-03seconds   0.688889E-07hrs
+     running time    37.3560    seconds   0.103767E-01hrs
