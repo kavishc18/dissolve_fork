@@ -6,6 +6,7 @@ add_library(
   atomType.cpp
   atomTypeData.cpp
   atomTypeMix.cpp
+  beadPartialSet.cpp
   beadType.cpp
   beadWeights.cpp
   bondFunctions.cpp

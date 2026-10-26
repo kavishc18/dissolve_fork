@@ -90,7 +90,8 @@ class Functions1D
         GaussianPotential,
         Harmonic,
         Coulombic,
-        ShiftedCoulomb
+        ShiftedCoulomb,
+        UniformSphere
     };
     // Return enum options for form
     static EnumOptions<Form> forms();

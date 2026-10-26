@@ -82,4 +82,23 @@ TEST_F(Function1DTest, UnitIntegral)
     }
 }
 
+// Hand-computed against the standard uniform-sphere form factor 3(sin(x)-x*cos(x))/x**3, used
+// for coarse-grained bead form factors (docs/ai-port/MIGRATION_DESIGN.md Increment 3).
+TEST_F(Function1DTest, UniformSphere)
+{
+    Function1DWrapper f(Functions1D::Form::UniformSphere, {2.5});
+
+    // x*sigma -> 0 limit should evaluate to 1 (point-scatterer limit)
+    EXPECT_NEAR(f.y(0.0), 1.0, 1.0e-10);
+
+    // Hand-computed at Q = 0.3, sigma = 2.5 -> arg = 0.75
+    const auto arg = 0.3 * 2.5;
+    const auto expected = 3.0 * (sin(arg) - arg * cos(arg)) / (arg * arg * arg);
+    EXPECT_NEAR(f.y(0.3), expected, 1.0e-10);
+
+    // First zero of the sphere form factor is at x*sigma = tan(x*sigma), i.e. arg ~ 4.4934
+    const auto qZero = 4.493409457909064 / 2.5;
+    EXPECT_NEAR(f.y(qZero), 0.0, 1.0e-6);
+}
+
 } // namespace UnitTest

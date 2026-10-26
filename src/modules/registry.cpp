@@ -9,6 +9,8 @@
 #include "modules/axisAngle/axisAngle.h"
 #include "modules/benchmark/benchmark.h"
 #include "modules/bragg/bragg.h"
+#include "modules/cgGR/cgGR.h"
+#include "modules/cgSQ/cgSQ.h"
 #include "modules/clustering/clustering.h"
 #include "modules/compare/compare.h"
 #include "modules/dAngle/dAngle.h"
@@ -54,6 +56,10 @@ ModuleRegistry::ModuleRegistry()
     registerProducer<BenchmarkModule>(ModuleTypes::Benchmark, "Perform benchmarking on a variety of functions",
                                       "Checks & Tests");
     registerProducer<BraggModule>(ModuleTypes::Bragg, "Calculate Bragg intensities", "Correlation Functions");
+    registerProducer<CGGRModule>(ModuleTypes::CGGR, "Calculate bead-bead radial distribution functions for coarse-grained sites",
+                                 "Correlation Functions");
+    registerProducer<CGSQModule>(ModuleTypes::CGSQ, "Calculate unweighted bead-bead structure factors for coarse-grained sites",
+                                 "Correlation Functions");
     registerProducer<ClusteringModule>(ModuleTypes::Clustering, "Analyse clustering between sites", "Analysis");
     registerProducer<CompareModule>(ModuleTypes::Compare, "Compare data sets and calculate errors", "Checks & Tests");
     registerProducer<DAngleModule>(ModuleTypes::DAngle, "Calculate distance/angle maps", "Analysis");

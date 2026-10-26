@@ -15,6 +15,8 @@ enum ModuleType
     AxisAngle,
     Benchmark,
     Bragg,
+    CGGR,
+    CGSQ,
     Checks,
     CheckSpecies,
     Clustering,

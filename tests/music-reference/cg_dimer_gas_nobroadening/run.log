@@ -1,0 +1,16 @@
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG IEEE_DENORMAL
+ Scattering calculation: version 1.1 (15-04-2024) 
+ read input.dat file successfully
+ read model.dat file successfully
+ Initialization of vectors for F(Q) completed
+ Loop begins over number of frames to populate           histogram for g(r) calculation
+ frame:                    1
+ frame:                    2
+ frame:                    3
+ Loop ends over number of frames; histogram computed
+ partial g(r) computed
+ bead radius computed
+ partial S(Q) computed
+ Weighted S(Q) computed
+     initial set up time   0.124000E-03seconds   0.344444E-07hrs
+     running time    1.51945    seconds   0.422069E-03hrs

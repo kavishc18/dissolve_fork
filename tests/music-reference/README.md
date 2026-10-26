@@ -100,6 +100,24 @@ this case's weighted `.sq` output against `cg_dimer_gas/`'s shows exactly the
 effect of the Gaussian bead form factor in isolation - useful for verifying a
 ported form-factor implementation independently of everything else.
 
+### `cg_dimer_gas_nobroadening/` - same trajectory, no broadening/window function
+
+Added during Slice 3 (`CGSQModule`) validation, not during the original Phase 2
+pass. Identical system/trajectory/topology to `cg_dimer_gas/` (shares its
+`CG_trajectory`, not re-copied here) but with `broadening: none` and
+`windowfn: none` in `input.dat`, instead of `OmegaDependentGaussian`/`Lorch0`.
+
+This exists because Dissolve's own `Lorch0` window function
+(`src/math/windowFunction.cpp`, normalises by the data's x-range) and MuSSIC's
+`Lorch0` (`sinefFt.F`, reuses the broadening FWHM as its own lengthscale) are
+different functions that happen to share a name - applying "Lorch0" in each
+code does not produce the same damping (see `docs/ai-port/MUSIC_NOTES.md`'s
+Fourier-transform section, and `docs/ai-port/DECISION_LOG.md` #15). This case
+isolates the core sine-transform + `4πρ` normalisation from that known,
+separate, deliberately-deferred convention mismatch - used by
+`tests/modules/cgSQ.cpp` instead of `cg_dimer_gas/`'s own (broadened/windowed)
+output for exactly that reason.
+
 ## What's deliberately NOT included (time-boxed scope of this pass)
 
 - A `compare_CG_atomistic` case (atomistic trajectory + `model.dat`

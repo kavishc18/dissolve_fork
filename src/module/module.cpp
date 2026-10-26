@@ -21,6 +21,8 @@ EnumOptions<ModuleTypes::ModuleType> moduleTypes_("ModuleType", {{ModuleTypes::A
                                                                  {ModuleTypes::AxisAngle, "AxisAngle"},
                                                                  {ModuleTypes::Benchmark, "Benchmark"},
                                                                  {ModuleTypes::Bragg, "Bragg"},
+                                                                 {ModuleTypes::CGGR, "CGGR"},
+                                                                 {ModuleTypes::CGSQ, "CGSQ"},
                                                                  {ModuleTypes::Checks, "Checks"},
                                                                  {ModuleTypes::CheckSpecies, "CheckSpecies"},
                                                                  {ModuleTypes::Clustering, "Clustering"},

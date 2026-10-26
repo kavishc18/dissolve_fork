@@ -419,6 +419,30 @@ const std::map<Functions1D::Form, Function1DDefinition> &functions1D()
         functions[Functions1D::Form::ShiftedCoulomb].setDerivativeFunction(
             [](double x, double omega, const std::vector<double> &params)
             { return COULCONVERT * params[0] * params[1] * (1.0 / (x * x) - 1.0 / (params[2] * params[2])); });
+
+        /*
+         * Uniform Sphere form factor
+         *
+         * Parameters:
+         * INPUT  0 = sigma (sphere radius)
+         *
+         * The normalised Fourier transform of a uniform-density sphere of radius sigma, as used
+         * for coarse-grained bead form factors (docs/ai-port/MUSIC_NOTES.md section 1 "CG
+         * physics"; MuSSIC bead_size.F). x is taken to be Q. Evaluates to 1 in the x*sigma -> 0
+         * limit (point-scatterer limit), matching the standard sinc-derived form factor.
+         *
+         *          3 ( sin(x*sigma) - x*sigma*cos(x*sigma) )
+         * f(x) = -------------------------------------------
+         *                      (x*sigma)**3
+         */
+        functions[Functions1D::Form::UniformSphere] =
+            Function1DDefinition({"sigma"}, [](double x, double omega, const std::vector<double> &params)
+                                 {
+                                     auto arg = x * params[0];
+                                     if (fabs(arg) < 1.0e-8)
+                                         return 1.0;
+                                     return 3.0 * (sin(arg) - arg * cos(arg)) / (arg * arg * arg);
+                                 });
     }
 
     return functions;
@@ -439,7 +463,8 @@ EnumOptions<Functions1D::Form> Functions1D::forms()
                                            {Functions1D::Form::GaussianPotential, "GaussianPotential", 3},
                                            {Functions1D::Form::Harmonic, "Harmonic", 1},
                                            {Functions1D::Form::Coulombic, "Coulombic", 2},
-                                           {Functions1D::Form::ShiftedCoulomb, "ShiftedCoulomb", 3}});
+                                           {Functions1D::Form::ShiftedCoulomb, "ShiftedCoulomb", 3},
+                                           {Functions1D::Form::UniformSphere, "UniformSphere", 1}});
 }
 
 // Return parameters for specified form

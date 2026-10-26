@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Team Dissolve and contributors
 
 #include "items/producers.h"
+#include "classes/beadPartialSet.h"
 #include "classes/braggReflection.h"
 #include "classes/kVector.h"
 #include "classes/neutronWeights.h"
@@ -38,6 +39,7 @@ GenericItemProducer::GenericItemProducer()
     registerProducer<Array2D<Data1D>>("Array2D<Data1D>");
     registerProducer<Array3D<double>>("Array3D<double>");
     registerProducer<AtomTypeMix>("AtomTypeMix");
+    registerProducer<BeadPartialSet>("BeadPartialSet");
     registerProducer<Data1D>("Data1D");
     registerProducer<Data2D>("Data2D");
     registerProducer<Data3D>("Data3D");

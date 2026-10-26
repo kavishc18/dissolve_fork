@@ -62,10 +62,10 @@ Each increment is independently testable against `tests/music-reference/`
 
 | # | Increment | Validates against |
 |---|---|---|
-| 0 | Phase 1/2 research, golden reference data, this design | — (prerequisite, in progress) |
-| 1 | `BeadType` + `BeadWeights`, unit-tested in isolation (no module yet) | Hand-computed effective-`b` values for one reference case's bead types (e.g. dodecane's CE/C3 split, MUSIC_NOTES §2 annotated example) — fastest path to an early correctness signal, no FT involved |
-| 2 | `CGGRModule` (bead positions via `SpeciesSite`, bead-bead g(r)) | MuSSIC's `CG-unweighted-*.gr` (trustworthy — only the *weighted-total* `.gr` is broken, per MUSIC_NOTES D1) |
-| 3 | `Functions1D::UniformSphere` + `CGSQModule` | `CG-unweighted-*.sq` |
+| 0 | Phase 1/2 research, golden reference data, this design | **Done.** |
+| 1 | `BeadType` + `BeadWeights`, unit-tested in isolation (no module yet) | **Done.** Hand-computed effective-`b` values for dodecane's CE/C3 split (MUSIC_NOTES §2) — 5/5 unit tests pass exactly. |
+| 2 | `CGGRModule` (bead positions via `SpeciesSite`, bead-bead g(r)) | **Done.** MuSSIC's `CG-unweighted-*.gr` — matches to ~1e-29 (floating-point noise floor). R3 spike resolved: `GRModule`'s internals are hard-wired to `Configuration::atoms()`/`CellArray` (real-atom machinery), not reusable; built as a parallel, simple-double-loop implementation (no cell-list acceleration — bead counts expected far smaller than atom counts). See DECISION_LOG.md. |
+| 3 | `Functions1D::UniformSphere` + `CGSQModule` (bead-bead S(Q), **no** form factor) | **Done**, with one correction to the original plan: MuSSIC's form factor is applied only at the *weighted* stage (`neutronsq_cg.F`), never to unweighted `.sq` — applying it in `CGSQModule` would be scientifically wrong and would fail validation against the stated reference files. `UniformSphere` added to `Functions1D` as prep work for Increment 4 only. `CGSQModule` matches MuSSIC closely (RMSE 2-13e-3 depending on partial — tolerance deliberately not uniform across pairs, see DECISION_LOG.md). |
 | 4 | `CGNeutronSQModule` using `BeadWeights` | `*-CG-weighted-total.sq` (`F_CG(Q)`) — **the headline validation target**: this is the one MuSSIC CG output confirmed end-to-end functional |
 | 5 (stretch) | On-the-fly atomistic→CG mapping (MuSSIC's `compare_CG_atomistic` convenience) | — |
 | 6 (stretch, cut first if time-constrained) | GUI widgets for the new modules, matching the convention every existing scattering module follows (DISSOLVE_NOTES §1 step 5) | — |
@@ -112,11 +112,23 @@ Each increment is independently testable against `tests/music-reference/`
   sufficient to validate that ported code reproduces MuSSIC's *arithmetic*,
   but **not** sufficient to validate physical plausibility — flag clearly if
   anyone downstream mistakes these fixtures for validated physics.
-- **R3 — Unresolved: is `GRModule` generic enough to reuse for bead
-  positions, or does it need a parallel implementation?** (§1, `CGGRModule`.)
-  First concrete technical risk to retire, via a short Increment-2 spike
-  reading `src/modules/gr/functions.cpp` in full before deciding reuse vs.
-  reimplement.
+- **R3 — RESOLVED.** `GRModule`'s internals (`calculateGRSimple`/`calculateGRCells`)
+  are hard-wired to `Configuration::atoms()`, `Atom::localTypeIndex()`, and the
+  atom-based `CellArray` — not reusable for bead positions without injecting
+  fake atoms into the Configuration (which would corrupt every other module's
+  atom count). `CGGRModule` is a parallel implementation, reusing the
+  *pattern* (`Histogram1D`, a `PartialSet`-shaped container) but not the code.
+  Validated to ~1e-29 agreement with MuSSIC's own `CG-unweighted-*.gr`.
+- **R7 (new) — Window function convention mismatch, deliberately not
+  replicated yet.** Dissolve's `Lorch0` window normalises by the data's own
+  x-range (`x/xMax`); MuSSIC's `Lorch0` reuses the broadening FWHM as its own
+  lengthscale (already flagged as a notable oddity in `MUSIC_NOTES.md`'s
+  Fourier-transform section, before this was confirmed to actually bite). The
+  `CGSQModule` validation test therefore uses a MuSSIC reference run with
+  broadening/windowing turned off, to isolate and confirm the core
+  sine-transform + `4πρ` normalisation independently of this known,
+  deliberately-deferred convention difference. Replicating MuSSIC's literal
+  windowing behaviour (if ever needed) is a separate, explicit future task.
 - **R4 — Unread documentation. RESOLVED.** `MuSSIC_user_guide_v1.1.pdf` and
   the remaining pages of `MuSSIC_documentation.pdf` have now been read in
   full. Outcome: D5 (`qmin` override) is confirmed intended, not a bug; D2

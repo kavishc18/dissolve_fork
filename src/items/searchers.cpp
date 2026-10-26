@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 Team Dissolve and contributors
 
+#include "classes/beadPartialSet.h"
 #include "classes/neutronWeights.h"
 #include "classes/partialSet.h"
 #include "classes/partialSetAccumulator.h"
@@ -29,6 +30,12 @@ template <> GenericItemSearcher<const Data1D>::GenericItemSearcher()
         {
             auto &ps = std::any_cast<const PartialSet &>(a);
             return ps.searchData1D(dataName);
+        });
+    registerSearcher<BeadPartialSet>(
+        [](const std::any &a, std::string_view dataName)
+        {
+            auto &bps = std::any_cast<const BeadPartialSet &>(a);
+            return bps.searchData1D(dataName);
         });
 }
 
