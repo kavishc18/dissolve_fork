@@ -22,6 +22,7 @@ EnumOptions<ModuleTypes::ModuleType> moduleTypes_("ModuleType", {{ModuleTypes::A
                                                                  {ModuleTypes::Benchmark, "Benchmark"},
                                                                  {ModuleTypes::Bragg, "Bragg"},
                                                                  {ModuleTypes::CGGR, "CGGR"},
+                                                                 {ModuleTypes::CGNeutronSQ, "CGNeutronSQ"},
                                                                  {ModuleTypes::CGSQ, "CGSQ"},
                                                                  {ModuleTypes::Checks, "Checks"},
                                                                  {ModuleTypes::CheckSpecies, "CheckSpecies"},

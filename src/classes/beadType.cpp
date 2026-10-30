@@ -41,6 +41,31 @@ void BeadType::setEffectiveScatteringLength(double b) { effectiveScatteringLengt
 
 double BeadType::effectiveScatteringLength() const { return effectiveScatteringLength_; }
 
+double BeadType::calculateSelfScatteringWeight(const std::function<double(const std::shared_ptr<AtomType> &)> &boundCoherentFn)
+{
+    auto sumB = 0.0, sumBSquared = 0.0;
+    for (auto &component : components_)
+    {
+        auto b = boundCoherentFn(component.atomType);
+        sumB += component.count * b;
+        sumBSquared += component.count * b * b;
+    }
+    selfScatteringWeight_ = sumB * sumB - sumBSquared;
+    return selfScatteringWeight_;
+}
+
+void BeadType::setSelfScatteringWeight(double w) { selfScatteringWeight_ = w; }
+
+double BeadType::selfScatteringWeight() const { return selfScatteringWeight_; }
+
+int BeadType::totalAtomCount() const
+{
+    auto total = 0;
+    for (auto &component : components_)
+        total += component.count;
+    return total;
+}
+
 /*
  * Physical Size / Form Factor
  */
@@ -52,3 +77,10 @@ double BeadType::radius() const { return radius_; }
 void BeadType::setFormFactor(Functions1D::Form form) { formFactor_ = form; }
 
 Functions1D::Form BeadType::formFactor() const { return formFactor_; }
+
+double BeadType::formFactorAt(double q) const
+{
+    if (formFactor_ == Functions1D::Form::None)
+        return 1.0;
+    return Function1DWrapper(formFactor_, {radius_}).y(q);
+}

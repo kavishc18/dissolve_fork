@@ -125,6 +125,11 @@ class BeadPartialSet
     void formPartials(double boxVolume, const std::vector<int> &beadTypePopulations);
     // Sum partials into totals, weighted by the supplied per-bead-type concentration fractions
     void formTotals(const std::vector<double> &beadTypeFractions);
+    // Sum partials into totals directly (factor=1 for every stored i<=j entry), for use when the
+    // partials already have concentration/weighting factors baked in (e.g. CGNeutronSQModule,
+    // which pre-applies BeadWeights::weight(i,j) - itself already c_i*c_j*(2-delta_ij)-weighted -
+    // to each partial before calling this). Mirrors PartialSet::formTotals(false) exactly.
+    void formTotalsPreWeighted();
     // Return per-bead-type populations recorded at the last formPartials() call
     const std::vector<int> &beadTypePopulations() const;
     // Return total bead population (sum over all types) recorded at the last formPartials() call

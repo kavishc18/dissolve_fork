@@ -21,6 +21,61 @@
 - Checked against MUSIC's number again. Match good (small difference, like
   0.2%-1% depending which pair, explain why some pair bigger number below).
 
+## How I actually did it, step by step
+
+**Step 1 — get bead positions, every frame.**
+Dissolve already has a thing called a "Site" — basically "give me a point in
+space, computed from one or more atoms." I didn't build this, it already
+existed. I just told it "treat each bead as one site." So every frame, I get
+a list of bead positions for free, no new math needed here.
+
+**Step 2 — figure out which bead is which type.**
+Each site has a name (like "BA" or "BB"). I just group beads by that name —
+all sites named "BA" are one bead-type, all named "BB" are another. Simple
+lookup, no new system needed.
+
+**Step 3 — distance calculation (the actual g(r) part).**
+This is just: take every pair of beads, measure distance between them
+(using the box's "shortest distance" rule, so it wraps around edges
+correctly — standard simulation-box trick, already existed in Dissolve, I
+just called it). Then:
+- Put that distance into a histogram "bucket" (bin), separately for each
+  bead-type pair (BA-BA bucket, BA-BB bucket, BB-BB bucket).
+- ALSO check: are these two beads from the same molecule? If yes, put it
+  ALSO into a separate "same-molecule" bucket (this becomes the "bound" /
+  intramolecular result). If different molecule, that's "unbound".
+- Do this for every pair, every frame. Keep adding up (accumulating) across
+  all frames rather than redo-ing it fresh each frame — this matches how
+  MUSIC itself does it (add up everything, divide once at the end), not how
+  Dissolve's normal atom-version does it (recompute fresh each frame,
+  average afterward). Different method, same idea, both valid — I picked
+  the one that matches MUSIC so comparing output is honest/direct.
+
+**Step 4 — turn raw counts into g(r) (normalize).**
+Raw bucket counts alone don't mean anything — need to divide by "how much
+empty space is in that distance shell" and "how many beads there are total"
+to get a proper g(r) curve. Dissolve already had a ready-made formula
+function for exactly this (used for normal atoms already) — I reused that
+exact function directly, just fed it bead counts instead of atom counts.
+Didn't have to write this math myself.
+
+**Step 5 — turn g(r) into S(Q) (Fourier transform).**
+Same idea as step 4 — Dissolve already has a ready-made "turn this curve
+into its wave-equivalent" function (sine transform) used for normal atoms. I
+called that same function, just on bead g(r) instead of atom g(r). Subtract
+1 first (standard step, turns g(r) into "how different from random" before
+transforming), then transform, same as the normal atom version does.
+
+**Step 6 — check my numbers against MUSIC's real numbers.**
+Built one small fake test system myself (200 fake two-bead molecules, random
+positions, one bead type "glued" near its partner) — not real physics, just
+something with clear right/wrong answer to check against. Ran the REAL
+MUSIC program on it first (got its answer), then ran my new Dissolve code on
+the exact same data, compared numbers side by side. Distance calculation
+(step 3+4) matched almost perfectly (difference is basically zero, computer
+rounding level only). S(Q) step matched well too, once I found and worked
+around one unrelated settings mismatch (explained in decision 3 below).
+
 ## Important decision I made (please read)
 
 1. **Could not reuse Dissolve's existing GR code.** I check properly (read

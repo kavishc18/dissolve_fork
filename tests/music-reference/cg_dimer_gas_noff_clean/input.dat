@@ -1,0 +1,47 @@
+run:
+CG
+nproc:
+1
+title:
+CG_dimer_gas_noFF
+ntypes:
+2
+box_length:
+40.0   40.0   40.0
+bin_width:
+0.2d0
+ensemble:
+NVT
+label_atom:
+AT1
+AT2
+scattering_lengths:
+5.0d0
+3.0d0
+6.671d0
+form_factor:
+no_FF
+exchangeable_atoms:
+0
+number_isotopologues:
+1
+isotopologues:
+sample_1   H
+atom    natural   isotope
+AT1       1.0      0.0
+AT2       1.0      0.0
+qmin:
+0.01d0
+qdelta:
+0.02d0
+qmax:
+10.0d0
+binning:
+linear
+broadening:
+none
+FWHM:
+0.1d0
+windowfn:
+none
+endinput

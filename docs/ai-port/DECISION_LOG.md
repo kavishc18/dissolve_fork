@@ -275,3 +275,61 @@ tolerance from its actually-achieved precision (2-3e-3 for strong-signal partial
 for the weak-signal ones) rather than one tolerance for all four — logged with the reasoning
 in the test file itself, not just here, since that's where someone re-tuning it later will
 look first.
+
+## 16. Slice 4 (`CGNeutronSQModule`) — derived the self/single-bead term from source, not inference
+
+**Situation:** The headline validation target (`*-CG-weighted-total.sq`) needed a physics term
+that has **no equivalent in Dissolve's existing atomistic `NeutronSQ`**: MuSSIC's "self/
+single-bead scattering" contribution, accounting for scattering between the real atoms
+notionally inside one bead, which no bead-bead pair partial captures. Getting this formula
+wrong would silently produce a plausible-looking but incorrect weighted total.
+**Decision: derive it from MuSSIC's actual Fortran source, not from my own earlier paraphrase
+of the documentation.** My own `MUSIC_NOTES.md` (written during Phase 1) already summarised
+this term, but re-reading `neutronsq_cg.F` line-by-line directly for this slice turned up that
+the "simplified" formula in the documentation PDF, and my own paraphrase of it, had dropped a
+squared exponent (`− Σ_i N_i^s b_i` vs. the code's actual `− Σ_i N_i^s b_i²`) — a small-looking
+difference that would have produced a wrong answer. Verified the corrected formula
+(`weight(i) = c(i) * [effectiveB(i)² − Σ_m N_m^i b_m²]`) by hand-computing it for the
+dimer-gas test case and matching MuSSIC's own diagnostic "self-scattering" output column to
+**11 significant figures** (0.60888888888888892) before writing a single line of module code —
+this is what "trust but verify, including your own earlier notes" looks like in practice, not
+just a slogan.
+**Also discovered and confirmed by this same hand-check:** scattering lengths must be
+converted to Dissolve's internal unit convention (raw fm × 0.1) before use in `BeadType`'s
+calculations — matching exactly how `NeutronWeights` itself applies this factor
+(`src/classes/neutronWeights.cpp`). Using raw fm values (as Slice 1's own unit test did,
+matching the *documentation PDF's* illustrative table) does not reproduce the actual code
+output; only the ×0.1-converted values do. This is now documented directly in `BeadType`'s
+header, not just here, since it's the kind of unit-convention trap that's easy to silently
+get wrong again later.
+**Scope decision (not yet resolved, logged as deliberate):** bead type definitions
+(composition, scattering lengths, radius, form factor) are not wired through the input-file
+keyword system yet — same scope cut as `BeadType`/`BeadWeights` in Slice 1. Set
+programmatically via `CGNeutronSQModule::setBeadWeights()` after `systemTest.setUp()`, mirroring
+how existing tests already mutate module keywords/state directly before calling `iterate()`
+(e.g. `tests/modules/gr.cpp`'s `GRModuleTest.Methods`). Real input-file wiring is future work.
+**Result:** Validated against a dedicated MuSSIC reference run (`form_factor: no_FF`, no
+broadening, no window — generated specifically to isolate this formula from the two
+already-known, separately-deferred convention mismatches from Slices 3) to RMSE 3.3e-3 against
+a value range of ~0.43-1.26 — well under 1%. **This is the headline target for the whole port;
+met.**
+
+## 17. A real regression, found and fixed before it reached the user
+
+**Situation:** After adding `CGNeutronSQModule`, the full test suite showed `CGGRModuleTest`
+and `CGSQModuleTest` failing — not the pre-existing scratch-file issue this time (confirmed by
+re-running with a freshly cleaned `tests/data/`, and by reproducing in complete isolation,
+single test binary, no parallelism).
+**Root cause:** The new `CGNeutronSQ01` module block had been added to the *shared* input file
+(`cgGR-dimerGas.txt`) that `CGGRModuleTest` and `CGSQModuleTest` also use — but those tests
+never call `setBeadWeights()`, so `CGNeutronSQModule::process()` correctly fails every
+iteration (no bead weights configured), which drags down `dissolve().iterate(3)` for the whole
+layer, breaking `ASSERT_TRUE(...)` in tests that have nothing to do with `CGNeutronSQ`.
+**Decision:** Gave `CGNeutronSQModuleTest` its own dedicated input file
+(`cgNeutronSQ-dimerGas.txt`, identical to `cgGR-dimerGas.txt` plus the one extra module block)
+rather than continuing to share one file across three tests with different configuration
+requirements. Verified by running all three test binaries independently after the fix, then
+the full suite: **338/338 pass.**
+**Why this is logged, not just silently fixed:** this is exactly the kind of mistake that's
+easy to make when iterating quickly on shared test fixtures, and worth a record of *why* each
+slice's test input file is separate rather than consolidated, for whoever edits these next.

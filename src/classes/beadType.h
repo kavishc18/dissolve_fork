@@ -78,6 +78,30 @@ class BeadType
     // Return the current effective scattering length (fm)
     double effectiveScatteringLength() const;
 
+    private:
+    // Self/single-bead scattering weight: effectiveScatteringLength^2 - sum_i(count_i * b_i^2),
+    // i.e. the within-bead (same-bead, cross-atom) scattering contribution that isn't captured by
+    // any bead-bead pair partial. Mirrors MuSSIC's "weight(i)" before the concentration factor is
+    // applied (neutronsq_cg.F, confirmed against source directly - see docs/ai-port/DECISION_LOG.md
+    // Slice 4 entry). Note: inputs must be in the same scattering-length convention Dissolve's own
+    // NeutronWeights uses internally (raw fm value x0.1), not raw fm - confirmed empirically by
+    // reproducing MuSSIC's own self-scattering output column exactly only after applying that
+    // factor; the x0.1 conversion is the caller's responsibility (e.g. applied in the lookup
+    // function passed to calculateEffectiveScatteringLength/calculateSelfScatteringWeight), not
+    // baked into this class, to match where NeutronWeights itself applies it.
+    double selfScatteringWeight_{0.0};
+
+    public:
+    // Calculate, store, and return the self/single-bead scattering weight from constituent atom
+    // types, using the supplied per-atom-type bound coherent scattering length lookup
+    double calculateSelfScatteringWeight(const std::function<double(const std::shared_ptr<AtomType> &)> &boundCoherentFn);
+    // Directly set the self/single-bead scattering weight, bypassing calculation
+    void setSelfScatteringWeight(double w);
+    // Return the current self/single-bead scattering weight
+    double selfScatteringWeight() const;
+    // Return total number of constituent atoms in one bead (sum of component counts)
+    int totalAtomCount() const;
+
     /*
      * Physical Size / Form Factor
      */
@@ -96,4 +120,10 @@ class BeadType
     void setFormFactor(Functions1D::Form form);
     // Return form factor functional form
     Functions1D::Form formFactor() const;
+    // Evaluate the bead's form factor at the given Q (Angstroms^-1). Returns 1.0 (point-bead) when
+    // formFactor() is Functions1D::None - NOT the same as Function1DWrapper's own y() for None,
+    // which returns 0 (that convention is for "no broadening contribution", not "no form factor
+    // damping"; a point bead must not attenuate scattering at all, i.e. factor 1, matching
+    // MuSSIC's no_FF: FF(i,j)=1, bead_size.F).
+    double formFactorAt(double q) const;
 };

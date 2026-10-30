@@ -1,0 +1,87 @@
+#------------------------#
+#     Define Species     #
+#------------------------#
+
+Species 'Dimer'
+  # Atoms - positions are placeholders, immediately overwritten by ImportTrajectory
+  Atom    1    H     0.0    0.0    0.0   'XA'
+  Atom    2    H     1.0    0.0    0.0   'XB'
+
+  # Bond - required for species connectivity; not physically meaningful since positions are
+  # immediately overwritten by ImportTrajectory and no MD/energy evaluation is performed
+  Bond  1  2  Harmonic  1000.0  3.0
+
+  # Analysis Sites - one per bead; site name is the bead-type identity used by CGGR/CGSQ
+  Site  'BA'
+    Origin  1
+  EndSite
+  Site  'BB'
+    Origin  2
+  EndSite
+EndSpecies
+
+#------------------------#
+#     Pair Potentials    #
+#------------------------#
+
+PairPotentials
+  Range  15.000000
+  Delta  0.050000
+  ManualChargeSource  True
+  IncludeCoulomb  False
+  ForceChargeSource  True
+  Parameters  'XA'  H  0.0  LJGeometric  0.0  0.0
+  Parameters  'XB'  H  0.0  LJGeometric  0.0  0.0
+EndPairPotentials
+
+#------------------------#
+#  Define Configuration  #
+#------------------------#
+
+Configuration  'Bulk'
+  Generator
+    Box
+      Lengths  40.0  40.0  40.0
+    EndBox
+    Add
+      Population  200
+      Species  'Dimer'
+      BoxAction  None
+    EndAdd
+  EndGenerator
+EndConfiguration
+
+#------------------------#
+#   Define Processing    #
+#------------------------#
+
+Layer  'Processing'
+
+  # Trajectory Processing - synthetic bead trajectory generated for the AI-assisted MUSIC port
+  # evaluation, see tests/music-reference/cg_dimer_gas/ (3 frames, 200 dimers, box 40x40x40 A)
+  Module  ImportTrajectory
+    Configuration  'Bulk'
+    Format  xyz  'cg-port/cg_dimer_gas.xyz'
+    EndFormat
+  EndModule
+
+  Module  CGGR  'CGGR01'
+    Configuration  'Bulk'
+    BeadSites  Dimer  'BA'  Dimer  'BB'
+    Range  20.0
+    BinWidth  0.2
+  EndModule
+
+  Module  CGSQ  'CGSQ01'
+    SourceCGGR  'CGGR01'
+    QMin  0.31733259127169627
+    QMax  10.0
+    QDelta  0.02
+    WindowFunction  None
+  EndModule
+
+  Module  CGNeutronSQ  'CGNeutronSQ01'
+    SourceCGSQ  'CGSQ01'
+  EndModule
+
+EndLayer

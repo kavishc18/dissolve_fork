@@ -16,6 +16,7 @@ enum ModuleType
     Benchmark,
     Bragg,
     CGGR,
+    CGNeutronSQ,
     CGSQ,
     Checks,
     CheckSpecies,

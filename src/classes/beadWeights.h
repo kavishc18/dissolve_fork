@@ -6,6 +6,7 @@
 #include "classes/beadType.h"
 #include "templates/array2D.h"
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -36,6 +37,16 @@ class BeadWeights
     void addBeadType(std::shared_ptr<BeadType> beadType, double fraction);
     // Return number of bead types
     int nBeadTypes() const;
+    // Return the i-th bead type
+    const std::shared_ptr<BeadType> &beadType(int i) const;
+    // Return the i-th bead type's fractional concentration
+    double fraction(int i) const;
+    // Return the names of all bead types, in order
+    std::vector<std::string> beadTypeNames() const;
+    // Return the concentration-weighted average number of atoms per bead (stands in for Soper's
+    // N_A normalisation in MuSSIC's CG cross-section formula - see
+    // docs/ai-port/MUSIC_NOTES.md section 1 "CG physics", avg_noa_bead in neutronsq_cg.F)
+    double averageAtomsPerBead() const;
 
     /*
      * Weights

@@ -118,6 +118,27 @@ separate, deliberately-deferred convention mismatch - used by
 `tests/modules/cgSQ.cpp` instead of `cg_dimer_gas/`'s own (broadened/windowed)
 output for exactly that reason.
 
+### `cg_dimer_gas_noff_clean/` - same trajectory, `form_factor: no_FF` AND no broadening/window
+
+Added during Slice 4 (`CGNeutronSQModule`) validation. Identical system/
+trajectory/topology to `cg_dimer_gas/`, but combines *both* isolation
+settings used separately in earlier cases: `form_factor: no_FF` (point
+beads, like `cg_dimer_gas_noff/`) *and* `broadening: none` / `windowfn: none`
+(like `cg_dimer_gas_nobroadening/`). `cg_dimer_gas_noff/` on its own still
+has broadening/windowing turned on, which would reintroduce the Lorch0
+convention mismatch (see `cg_dimer_gas_nobroadening/`'s entry above) into a
+test that's specifically trying to isolate and validate the *weighting*
+formula (self/single-bead term + cross-bead term + avg_noa_bead
+normalisation - see `docs/ai-port/DECISION_LOG.md` #16).
+
+This case's `H-CG-weighted-total.sq` is the headline validation target for
+the whole AI-assisted port: it's MuSSIC's weighted total `F_CG(Q)`, the one
+CG output confirmed end-to-end functional (unlike the `.gr` weighted-total
+files, broken per `docs/ai-port/MUSIC_NOTES.md` D1). Its "self-scattering"
+diagnostic column was hand-verified against the `CGNeutronSQModule`
+weighting formula to 11 significant figures before any module code was
+written.
+
 ## What's deliberately NOT included (time-boxed scope of this pass)
 
 - A `compare_CG_atomistic` case (atomistic trajectory + `model.dat`

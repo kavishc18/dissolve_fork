@@ -10,6 +10,7 @@
 #include "modules/benchmark/benchmark.h"
 #include "modules/bragg/bragg.h"
 #include "modules/cgGR/cgGR.h"
+#include "modules/cgNeutronSQ/cgNeutronSQ.h"
 #include "modules/cgSQ/cgSQ.h"
 #include "modules/clustering/clustering.h"
 #include "modules/compare/compare.h"
@@ -60,6 +61,9 @@ ModuleRegistry::ModuleRegistry()
                                  "Correlation Functions");
     registerProducer<CGSQModule>(ModuleTypes::CGSQ, "Calculate unweighted bead-bead structure factors for coarse-grained sites",
                                  "Correlation Functions");
+    registerProducer<CGNeutronSQModule>(ModuleTypes::CGNeutronSQ,
+                                        "Apply neutron scattering weights to coarse-grained bead-bead structure factors",
+                                        "Correlation Functions");
     registerProducer<ClusteringModule>(ModuleTypes::Clustering, "Analyse clustering between sites", "Analysis");
     registerProducer<CompareModule>(ModuleTypes::Compare, "Compare data sets and calculate errors", "Checks & Tests");
     registerProducer<DAngleModule>(ModuleTypes::DAngle, "Calculate distance/angle maps", "Analysis");

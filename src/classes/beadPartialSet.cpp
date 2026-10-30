@@ -196,6 +196,40 @@ void BeadPartialSet::formTotals(const std::vector<double> &beadTypeFractions)
         }
 }
 
+// Sum partials into totals directly (factor=1) - see header comment
+void BeadPartialSet::formTotalsPreWeighted()
+{
+    auto nTypes = nBeadTypes();
+    if (nTypes == 0)
+    {
+        total_.clear();
+        boundTotal_.clear();
+        unboundTotal_.clear();
+        return;
+    }
+
+    total_.initialise(partials_[{0, 0}]);
+    boundTotal_.initialise(partials_[{0, 0}]);
+    unboundTotal_.initialise(partials_[{0, 0}]);
+    std::ranges::fill(total_.values(), 0.0);
+    std::ranges::fill(boundTotal_.values(), 0.0);
+    std::ranges::fill(unboundTotal_.values(), 0.0);
+
+    for (auto i = 0; i < nTypes; ++i)
+        for (auto j = i; j < nTypes; ++j)
+        {
+            auto &full = partials_[{i, j}].values();
+            auto &bound = boundPartials_[{i, j}].values();
+            auto &unbound = unboundPartials_[{i, j}].values();
+            for (auto n = 0; n < total_.nValues(); ++n)
+            {
+                total_.value(n) += full[n];
+                boundTotal_.value(n) += bound[n];
+                unboundTotal_.value(n) += unbound[n];
+            }
+        }
+}
+
 const std::vector<int> &BeadPartialSet::beadTypePopulations() const { return beadTypePopulations_; }
 
 int BeadPartialSet::totalBeadPopulation() const

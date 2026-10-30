@@ -20,6 +20,27 @@ void BeadWeights::addBeadType(std::shared_ptr<BeadType> beadType, double fractio
 
 int BeadWeights::nBeadTypes() const { return beadTypes_.size(); }
 
+const std::shared_ptr<BeadType> &BeadWeights::beadType(int i) const { return beadTypes_[i].first; }
+
+double BeadWeights::fraction(int i) const { return beadTypes_[i].second; }
+
+std::vector<std::string> BeadWeights::beadTypeNames() const
+{
+    std::vector<std::string> names;
+    names.reserve(beadTypes_.size());
+    for (auto &[beadType, fraction] : beadTypes_)
+        names.emplace_back(beadType->name());
+    return names;
+}
+
+double BeadWeights::averageAtomsPerBead() const
+{
+    auto avg = 0.0;
+    for (auto &[beadType, fraction] : beadTypes_)
+        avg += fraction * beadType->totalAtomCount();
+    return avg;
+}
+
 /*
  * Weights
  */
