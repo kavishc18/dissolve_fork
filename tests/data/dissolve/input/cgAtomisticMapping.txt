@@ -1,0 +1,119 @@
+#------------------------#
+#     Define Species     #
+#------------------------#
+
+# Nonamer: 9 real atoms, two coarse-grained beads - BA (atoms 1-3) and
+# BB (atoms 4-9) - exactly mirroring the bead composition already validated
+# in Slices 2-4 (BA = 3xAT1, BB = 2xAT1 + 4xAT2), but now built from genuine
+# multi-atom positions read from a real atomistic trajectory, to validate
+# on-the-fly atomistic->CG mapping (Slice 5, MuSSIC's compare_CG_atomistic).
+# Positions are placeholders, immediately overwritten by ImportTrajectory.
+Species 'Nonamer'
+  Atom    1    H     0.0    0.0    0.0   'MA'
+  Atom    2    H     0.1    0.0    0.0   'MA'
+  Atom    3    H     0.2    0.0    0.0   'MA'
+  Atom    4    H     3.0    0.0    0.0   'MA'
+  Atom    5    H     3.1    0.0    0.0   'MA'
+  Atom    6    H     3.2    0.0    0.0   'MB'
+  Atom    7    H     3.3    0.0    0.0   'MB'
+  Atom    8    H     3.4    0.0    0.0   'MB'
+  Atom    9    H     3.5    0.0    0.0   'MB'
+
+  # Bonds - a simple chain, just for species connectivity; not physically
+  # meaningful since positions are immediately overwritten and no MD/energy
+  # evaluation is performed
+  Bond  1  2  Harmonic  1000.0  1.0
+  Bond  2  3  Harmonic  1000.0  1.0
+  Bond  3  4  Harmonic  1000.0  1.0
+  Bond  4  5  Harmonic  1000.0  1.0
+  Bond  5  6  Harmonic  1000.0  1.0
+  Bond  6  7  Harmonic  1000.0  1.0
+  Bond  7  8  Harmonic  1000.0  1.0
+  Bond  8  9  Harmonic  1000.0  1.0
+
+  # Analysis Sites - the actual on-the-fly bead mapping: each bead's origin
+  # is the (unweighted, i.e. geometric-centroid) average position of several
+  # real atoms, computed fresh every frame by Dissolve's existing SpeciesSite
+  # machinery - no new code was needed for this, see docs/ai-port/DECISION_LOG.md
+  # Slice 5 entry. OriginMassWeighted is left at its default (False/unweighted)
+  # specifically to match MuSSIC's actual (unweighted-centroid) behaviour for
+  # this validation - see docs/ai-port/GAP_ANALYSIS.md D6 for the documented-
+  # vs-actual mass-weighting discrepancy this deliberately replicates here.
+  Site  'BA'
+    Origin  1  2  3
+  EndSite
+  Site  'BB'
+    Origin  4  5  6  7  8  9
+  EndSite
+EndSpecies
+
+#------------------------#
+#     Pair Potentials    #
+#------------------------#
+
+PairPotentials
+  Range  15.000000
+  Delta  0.050000
+  ManualChargeSource  True
+  IncludeCoulomb  False
+  ForceChargeSource  True
+  Parameters  'MA'  H  0.0  LJGeometric  0.0  0.0
+  Parameters  'MB'  H  0.0  LJGeometric  0.0  0.0
+EndPairPotentials
+
+#------------------------#
+#  Define Configuration  #
+#------------------------#
+
+Configuration  'Bulk'
+  Generator
+    Box
+      Lengths  40.0  40.0  40.0
+    EndBox
+    Add
+      Population  200
+      Species  'Nonamer'
+      BoxAction  None
+    EndAdd
+  EndGenerator
+EndConfiguration
+
+#------------------------#
+#   Define Processing    #
+#------------------------#
+
+Layer  'Processing'
+
+  # Trajectory Processing - synthetic ATOMISTIC (not bead-level) trajectory,
+  # see tests/music-reference/cg_atomistic_mapping/ (3 frames, 200 molecules
+  # x 9 atoms, box 40x40x40 A)
+  Module  ImportTrajectory
+    Configuration  'Bulk'
+    Format  xyz  'cg-port/atomistic_mapping/atomistic_trajectory.xyz'
+    EndFormat
+  EndModule
+
+  # CGGR/CGSQ/CGNeutronSQ below are completely unchanged from Slices 2-4 -
+  # the only difference from the earlier dimer-gas test is that BeadSites now
+  # reference multi-atom Sites fed by a real atomistic trajectory, instead of
+  # single-atom Sites fed by a pre-made bead-position trajectory.
+  Module  CGGR  'CGGR01'
+    Configuration  'Bulk'
+    BeadSites  Nonamer  'BA'  Nonamer  'BB'
+    Range  20.0
+    BinWidth  0.2
+  EndModule
+
+  Module  CGSQ  'CGSQ01'
+    SourceCGGR  'CGGR01'
+    QMin  0.31733259127169627
+    QMax  10.0
+    QDelta  0.02
+    WindowFunction  None
+  EndModule
+
+  Module  CGNeutronSQ  'CGNeutronSQ01'
+    SourceCGSQ  'CGSQ01'
+  EndModule
+
+EndLayer

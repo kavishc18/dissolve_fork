@@ -139,6 +139,28 @@ diagnostic column was hand-verified against the `CGNeutronSQModule`
 weighting formula to 11 significant figures before any module code was
 written.
 
+### `cg_atomistic_mapping/` - genuine multi-atom trajectory, `run: compare_CG_atomistic`
+
+Added for Slice 5 (stretch): on-the-fly atomistic->CG mapping. Unlike every
+other case here, this is **not** a pre-made bead-position trajectory - it's
+a genuine synthetic *atomistic* trajectory (200 molecules x 9 real atoms
+each: atoms_trajectory, `generate_atomistic_trajectory.py`), with MuSSIC
+itself deriving the CG mapping on the fly via `model.dat`'s `cg_mapping`
+block (`run: compare_CG_atomistic`), exactly as a real coarse-graining
+workflow would use it.
+
+Bead composition deliberately mirrors `cg_dimer_gas/`'s (BA = 3xAT1, BB =
+2xAT1 + 4xAT2) so results are directly comparable in spirit, just now built
+from real multi-atom averaging (small positional jitter around each bead's
+notional centre) instead of a single literal bead-position point per frame.
+`form_factor: no_FF`, no broadening/window - same isolation convention as
+`cg_dimer_gas_noff_clean/`. MuSSIC also computes the plain atomistic F(Q)
+for this trajectory as a side effect of `compare_CG_atomistic` (the
+`unweighted-*`/`H-weighted-*` files here, without the `CG-` prefix) - not
+used for anything in this port (Dissolve already has its own equivalent
+atomistic pipeline), archived here only because MuSSIC produces it
+automatically as part of the same run.
+
 ## What's deliberately NOT included (time-boxed scope of this pass)
 
 - A `compare_CG_atomistic` case (atomistic trajectory + `model.dat`
